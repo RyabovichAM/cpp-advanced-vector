@@ -188,8 +188,8 @@ public:
         iterator nc_pos = const_cast<iterator>(pos);
         if(size_ < Capacity()) {
             if(pos == end()) {
-                new (data_.GetAddress()) T(std::forward<Args>(args)...);
-                nc_pos = begin();
+                new (end()) T(std::forward<Args>(args)...);
+                nc_pos = end();
             } else {
                 T tmp(std::forward<Args>(args)...);
                 std::uninitialized_move_n(end()-1,1,end());
@@ -231,25 +231,7 @@ public:
 
     template <typename... Args>
     T& EmplaceBack(Args&&... args) {
-        if (size_ == Capacity()) {
-            size_t size = 0;
-            if(size_ == 0) {
-                size = 1;
-            } else {
-                size = Capacity() * 2;
-            }
-            RawMemory<T> new_data(size);
-
-            new (new_data + size_) T(std::forward<Args>(args)...);
-            CopyOrMoveData(data_.GetAddress(), size_, new_data.GetAddress());
-
-            new_data.Swap(data_);
-            std::destroy_n(new_data.GetAddress(), size_);
-        } else {
-            new (data_ + size_) T(std::forward<Args>(args)...);
-        }
-        ++size_;
-        return *(data_ + size_ - 1);
+        return *Emplace(end(),std::forward<Args>(args)...);
     }
 
     iterator Erase(const_iterator pos) {
