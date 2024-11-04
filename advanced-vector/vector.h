@@ -250,7 +250,7 @@ public:
     }
 
     void PopBack() noexcept {
-        Destroy(data_.GetAddress() + size_);
+        Destroy(end() - 1);
         --size_;
     }
 
